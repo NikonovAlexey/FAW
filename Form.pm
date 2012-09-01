@@ -85,6 +85,16 @@ sub render_items {
     return $rez;
 }
 
+sub render_items_as_table {
+    my ($self) = @_;
+    my $rez = "<table>";
+
+    $rez .= "<tr><td>" . FAW::Element->new($_)->render_element_in_table() .  "</td></tr>" foreach (@{$self->fields});
+    $rez .= "</table>";
+    
+    return $rez;
+}
+
 =head2 render_buttons
 
     С точки зрения логики, кнопки - особный набор элементов, который должен

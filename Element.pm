@@ -30,6 +30,11 @@ has 'value'     => ( is  => 'rw', isa => 'Str', );
 has 'default'   => ( is  => 'rw', isa => 'Str', );
 has 'mask'      => ( is  => 'rw', isa => 'Str', );
 
+# хранилище значений для списков/перечней/радиокнопок
+has 'values'    => ( is  => 'rw', isa => 'Ref', );
+# опции, нужные для некоторых jQuery-элементов форм
+has 'jqoptions' => ( is  => 'rw', isa => 'Str', );
+
 # Контейнет прикрепляемого jQuery-кода
 has 'jquery'    => ( is  => 'rw', isa => 'Str', );
 
@@ -52,25 +57,51 @@ sub build_element {
         $self->build_tooltip; 
 
     given ($self->type) {
-        when (/input/i) { return sprintf 
-                qq(\n\t<input type='text' name='%s' value='%s' %s>),
-                $self->name, $value, $args; 
+        when (/^text$/i) { return sprintf 
+            qq(\n\t<input type='text' name='%s' value='%s' %s>),
+            $self->name, $value, $args; 
         }
-        when (/password/i) { return sprintf
-                qq(\n\t<input type='password' name='%s' %s>),
-                $self->name, $args; 
+        when (/^password$/i) { return sprintf
+            qq(\n\t<input type='password' name='%s' %s>),
+            $self->name, $args; 
         }
-        when (/check/i) { return sprintf
-                qq(\n\t<input type='checkbox' name='%s' value='%s' %s>),
-                $self->name, $value, $args; 
+        when (/^date|datetime|time$/i) { return sprintf 
+            qq(\n\t<input type='text' name='%s' value='%s' %s>),
+            $self->name, $value, $args; 
         }
-        when (/text/i) { return sprintf
-                qq(\n\t<textarea name='%s' %s>%s</textarea>),
-                $self->name, $args, $value; 
+        when (/^check$/i) { return sprintf
+            qq(\n\t<input type='checkbox' name='%s' value='%s' %s>),
+            $self->name, $value, $args; 
         }
-        when (/button/i) { return sprintf
-                qq(\n\t<input type="submit" name="%s" value="%s" %s>),
-                $self->name, $self->value, $args;
+        when (/^switcher$/i) {
+            my ($t, $x, $y, $z, $o);
+            # переключатели перечислены в массиве хэшей. Каждый переключатель
+            # может иметь дополнительный ключ "default", который делает его
+            # выбранным по умолчанию.
+
+            # пройдём массив хэшей
+            foreach $z (@{$self->values}) { 
+                $o = "";
+                # разберём хэш с фиксацией ключа и включением checked для
+                # выбранного элемента
+                foreach $x (keys($z)) {
+                    if ($x =~ /default/i) { $o = " checked" }
+                    else { $y = $x };
+                }; 
+                # соберём очередной элемент радиокнопкового списка 
+                $t .= sprintf 
+                    qq(\n\t<input type='radio' name='%s' value='%s' %s> %s</input>),
+                    $self->name, $y, $args . $o, $z->{$y};
+            };
+            return $t;
+        }
+        when (/^wysiwyg$/i) { return sprintf
+            qq(\n\t<textarea name='%s' %s>%s</textarea>),
+            $self->name, $args, $value; 
+        }
+        when (/^button$/i) { return sprintf
+            qq(\n\t<input type="submit" name="%s" value="%s" %s>),
+            $self->name, $self->value, $args;
         }
     };
 }
@@ -82,13 +113,23 @@ sub build_element {
 =cut
 
 sub render_element {
-    my ($self) = @_;
-    my $rez =  
-        $self->build_label .' '.
-        $self->build_element . ' ' .
-        $self->build_note .' '.
-        "\n";
-    return $rez;
+    my ($self)  = @_;
+    my $label   = $self->build_label || "";
+    my $element = $self->build_element || ""; 
+    my $note    = $self->build_note || "";
+    return      "$label $element $note\n";
+}
+
+sub render_element_in_table {
+    my ($self)  = @_;
+    my $label   = $self->build_label || "";
+    my $element = $self->build_element || ""; 
+    my $note    = $self->build_note || "";
+    
+    
+    return      ($self->type =~ /^wysiwyg$/) ? 
+        "$label</td></tr><tr><td colspan='3'>$element</td></tr><tr><td colspan='3'>$note\n" :
+        "$label</td><td>$element</td><td>$note\n" ;
 }
 
 =head2 masked_js
@@ -106,6 +147,45 @@ sub build_js_masked {
         $self->get_id, $self->mask : "";
 }
 
+=head2 build_js_dated 
+
+    Если тип содержимого date, то подключаем jQuery-обработчик даты.
+
+=cut
+
+sub build_js_dated {
+    my ($self)  = @_;
+    my $type    = $self->type || "";
+    my $options = $self->jqoptions || "";
+    
+    given ($self->type) {
+        when ( /^time$/i ) {
+            return sprintf qq(\$\("#%s"\).timepicker\({%s}\);),
+                $self->get_id, $options;
+        }
+        when ( /^datetime$/i ) {
+            return sprintf qq(\$\("#%s"\).datetimepicker\({%s}\);),
+                $self->get_id, $options;
+        }
+        when ( /^date$/i ) {
+            return sprintf qq(\$\("#%s"\).datepicker\({%s}\);), 
+                $self->get_id, $options;
+        }
+    };
+    
+    return "";
+}
+
+sub build_js_wysiwyg {
+    my ( $self ) = @_;
+
+    return "" if ( $self->type !~ /^wysiwyg$/i);
+    return sprintf qq(bkLib.onDomLoaded\(function\(\) {
+        var ned = new nicEditor\({ fullPanel: true, iconsPath: '/images/nicEditorIcons.gif', uploadURI: '/uploadimage', maxHeight: 400,
+            }\).panelInstance\("%s"\);
+    }\);), $self->get_id;
+};
+
 =head2 render_js
 
     Возвращает завершённый jQuery-код, который можно использовать в парном
@@ -116,7 +196,9 @@ sub build_js_masked {
 sub render_js {
     my ($self) = @_;
     my $rez =
-        $self->masked_js . ' ' .
+        $self->build_js_masked . ' ' .
+        $self->build_js_dated . ' ' .
+        $self->build_js_wysiwyg . ' ' .
         "\n";
 
     return $rez;
