@@ -84,7 +84,7 @@ sub build_element {
                 $o = "";
                 # разберём хэш с фиксацией ключа и включением checked для
                 # выбранного элемента
-                foreach $x (keys($z)) {
+                foreach $x (keys(%{$z})) {
                     if ($x =~ /default/i) { $o = " checked" }
                     else { $y = $x };
                 }; 
@@ -98,6 +98,15 @@ sub build_element {
         when (/^wysiwyg$/i) { return sprintf
             qq(\n\t<textarea name='%s' %s>%s</textarea>),
             $self->name, $args, $value; 
+        }
+        when (/^upload$/i) { 
+            if ($value ne "") { return sprintf 
+                qq(\n\t<span %s>%s</span>),
+                $args, $value;
+            } else { return sprintf 
+                qq(\n\t<input type="file" name='%s' %s>),
+                $self->name, $args;
+            }
         }
         when (/^button$/i) { return sprintf
             qq(\n\t<input type="submit" name="%s" value="%s" %s>),
@@ -181,7 +190,7 @@ sub build_js_wysiwyg {
 
     return "" if ( $self->type !~ /^wysiwyg$/i);
     return sprintf qq(bkLib.onDomLoaded\(function\(\) {
-        var ned = new nicEditor\({ fullPanel: true, iconsPath: '/images/nicEditorIcons.gif', uploadURI: '/uploadimage', maxHeight: 400,
+        var ned = new nicEditor\({ fullPanel: true, iconsPath: '/images/nicEditorIcons.gif', uploadURI: '/page/uploadimage', maxHeight: 400,
             }\).panelInstance\("%s"\);
     }\);), $self->get_id;
 };

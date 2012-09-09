@@ -65,7 +65,7 @@ sub render_openform {
     my ( $self )    = @_;
     my $parentdom   = $self->build_id . ' ' . $self->build_class;
     my $parentdiv   = ($parentdom =~ /^\s*$/) ? "" : sprintf qq(<div %s>), $parentdom;
-    return sprintf qq(%s<form name="%s" action="%s" method="post">),
+    return sprintf qq(%s<form name="%s" action="%s" method="post" enctype="multipart/form-data">),
         $parentdiv, $self->formname, $self->action;
 }
 
