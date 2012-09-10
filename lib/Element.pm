@@ -189,10 +189,10 @@ sub build_js_wysiwyg {
     my ( $self ) = @_;
 
     return "" if ( $self->type !~ /^wysiwyg$/i);
-    return sprintf qq(bkLib.onDomLoaded\(function\(\) {
-        var ned = new nicEditor\({ fullPanel: true, iconsPath: '/images/nicEditorIcons.gif', uploadURI: '/page/uploadimage', maxHeight: 400,
+    return sprintf qq(
+        var ned = new nicEditor\({ fullPanel: true, iconsPath: '/images/nicEditorIcons.gif', maxHeight: 400, uploadURI: '/page/uploadimage', 
             }\).panelInstance\("%s"\);
-    }\);), $self->get_id;
+    ), $self->get_id;
 };
 
 =head2 render_js
