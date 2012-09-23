@@ -96,7 +96,7 @@ sub build_element {
             return $t;
         }
         when (/^wysiwyg$/i) { return sprintf
-            qq(\n\t<textarea name='%s' %s>%s</textarea>),
+            qq(\n\t<div name='%s' %s>%s</div>),
             $self->name, $args, $value; 
         }
         when (/^upload$/i) { 
@@ -189,10 +189,14 @@ sub build_js_wysiwyg {
     my ( $self ) = @_;
 
     return "" if ( $self->type !~ /^wysiwyg$/i);
-    return sprintf qq(
-        var ned = new nicEditor\({ fullPanel: true, iconsPath: '/images/nicEditorIcons.gif', maxHeight: 400, uploadURI: '/page/uploadimage', 
-            }\).panelInstance\("%s"\);
-    ), $self->get_id;
+    return sprintf qq|
+        \$("#%s").elrte({
+            cssClass: 'el-rte',
+            height: 400,
+            toolbar: 'complete',
+            cssfiles: ['css/elrte-inner.css'],
+        });
+    |, $self->get_id;
 };
 
 =head2 render_js
