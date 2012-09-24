@@ -1,8 +1,12 @@
 package FAW::Form;
+
+use feature ':5.10';
+
 use Moose;
 use FAW::Element;
+
+use Carp;
 use Data::Dump qw(dump);
-use feature ':5.10';
 
 with 'FAW::Roles::DDOM';
 
@@ -181,6 +185,7 @@ sub render_form {
 =head2 map_params
 
 Положить в хэш формы полученные параметры формы.
+Теперь значение подставляется, только если оно определено.
 
 =cut
 
@@ -188,9 +193,13 @@ sub map_params {
     my ( $self, %params ) = @_;
     my $z;
     
+    # для всех полей формы
     foreach (@{$self->fields}) {
+        # в очередное поле (имя поля) 
+        # подставить другое значение или пустоту
         $z = $_->{name};
-        $_->{value}  = $params{$z} || "";
+        $_->{value}  = $params{$z}
+            if ( defined($params{$z}) && ($params{$z} ne "") );
     }
 }
 
