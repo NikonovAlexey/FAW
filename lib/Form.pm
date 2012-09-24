@@ -152,23 +152,6 @@ sub render_js {
 }
 
 
-=head2 map_params
-
-    Положить в хэш формы полученные параметры формы.
-
-=cut
-
-sub map_params {
-    my ( $self, %params ) = @_;
-    my $z;
-    
-    foreach (@{$self->fields}) {
-        $z = $_->{name};
-        $_->{value}  = $params{$z} || "";
-    }
-}
-
-
 =head2 render_form 
 
     В большинстве случаев, формы рендерятся по одному и тому же принципу. Тогда
@@ -193,6 +176,67 @@ sub render_form {
         $self->render_closeform,
         $self->render_js;
 }
+
+
+=head2 map_params
+
+Положить в хэш формы полученные параметры формы.
+
+=cut
+
+sub map_params {
+    my ( $self, %params ) = @_;
+    my $z;
+    
+    foreach (@{$self->fields}) {
+        $z = $_->{name};
+        $_->{value}  = $params{$z} || "";
+    }
+}
+
+=head2 map_params_by_names 
+
+Если имя поля и запись в БД совпадает, то можно пользоваться более простым
+сопоставлением. Для этого и предназначена эта процедура, которая выполняет
+подстановку значений из текущей записи БД в соответствующее поле формы.
+
+После выполнения всех подстановок в хэш значения формы заполняются параметрами
+с помощью map_params
+
+=cut 
+
+sub map_params_by_names {
+    my ( $self, $schema, @params ) = @_;
+    my %keys;
+
+    foreach my $param (@params) {
+        %keys->{$param} = $schema->$param || ""; 
+    };
+    $self->map_params(%keys);
+}
+
+=head2 fieldset
+
+Одно из типовых действий - подстановка текущего значения в поледержатель для
+обработки пути перехода. Этот функционал выполняется здесь.
+
+Допускается использовать несколько сопоставлений для более чем одного
+поледержателя
+
+=cut
+
+sub fieldset {
+    my ( $self, %keys ) = @_;
+    my $v;
+
+    foreach my $k (keys(%keys)) {
+        $v = %keys->{$k} || "";
+        $self->{action} =~ s/$k/$v/;
+    };
+
+    return $self->{action};
+}
+
 
 __PACKAGE__->meta->make_immutable;
 
