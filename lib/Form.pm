@@ -194,12 +194,15 @@ sub map_params {
     my $z;
     
     # для всех полей формы
-    foreach (@{$self->fields}) {
+    foreach my $currfield (@{$self->fields}) {
         # в очередное поле (имя поля) 
         # подставить другое значение или пустоту
-        $z = $_->{name};
-        $_->{value}  = $params{$z}
-            if ( defined($params{$z}) && ($params{$z} ne "") );
+        $z = $currfield->{name};
+        if ( defined($params{$z}) && ($params{$z} ne "") ) {
+            $currfield->{value}  = $params{$z};
+        } else {
+            $currfield->{value}  = ""; 
+        };
     }
 }
 
@@ -219,7 +222,11 @@ sub map_params_by_names {
     my %keys;
 
     foreach my $param (@params) {
-        %keys->{$param} = $schema->$param || ""; 
+        if (ref($schema->$param) ne "") {
+            %keys->{$param} = $schema->$param->id || 0;
+        } else {
+            %keys->{$param} = $schema->$param || "";
+        };
     };
     $self->map_params(%keys);
 }
@@ -239,7 +246,7 @@ sub fieldset {
     my $v;
 
     foreach my $k (keys(%keys)) {
-        $v = %keys->{$k} || "";
+        $v = $keys{$k} || "";
         $self->{action} =~ s/$k/$v/;
     };
 

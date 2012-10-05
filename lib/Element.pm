@@ -1,6 +1,7 @@
 package FAW::Element; 
 use Moose;
 use feature ':5.10';
+use Data::Dump qw(dump);
 
 with 'FAW::Roles::DDOM', 'FAW::Roles::Notify';
 
