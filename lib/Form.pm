@@ -5,6 +5,7 @@ use feature ':5.10';
 use Moose;
 use FAW::Element;
 
+use Try::Tiny;
 use Carp;
 use Data::Dump qw(dump);
 
@@ -182,6 +183,20 @@ sub render_form {
 }
 
 
+=head2 empty_form
+
+=cut
+
+sub empty_form {
+    my ( $self ) = @_;
+
+    # для всех полей формы
+    foreach my $currfield (@{$self->fields}) {
+        # очистить очередное поле (имя поля) 
+        $currfield->{value}  = ""; 
+    }
+}
+
 =head2 map_params
 
 Положить в хэш формы полученные параметры формы.
@@ -223,9 +238,17 @@ sub map_params_by_names {
 
     foreach my $param (@params) {
         if (ref($schema->$param) ne "") {
-            %keys->{$param} = $schema->$param->id || 0;
+            try {
+            %keys->{$param} = $schema->$param->id;
+            } catch {
+            %keys->{$param} = undef;
+            };
         } else {
-            %keys->{$param} = $schema->$param || "";
+            try {
+            %keys->{$param} = $schema->$param;
+            } catch {
+            %keys->{$param} = "";
+            };
         };
     };
     $self->map_params(%keys);
