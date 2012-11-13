@@ -62,6 +62,10 @@ sub build_element {
             qq(\n\t<input type='text' name='%s' value='%s' %s>),
             $self->name, $value, $args; 
         }
+        when (/^textarea$/i) { return sprintf 
+            qq(\n\t<textarea name='%s' %s>%s</textarea>),
+            $self->name, $args, $value;
+        }
         when (/^password$/i) { return sprintf
             qq(\n\t<input type='password' name='%s' %s>),
             $self->name, $args; 
@@ -91,10 +95,19 @@ sub build_element {
                 }; 
                 # соберём очередной элемент радиокнопкового списка 
                 $t .= sprintf 
-                    qq(\n\t<input type='radio' name='%s' value='%s' %s> %s</input>),
+                    qq(\n\t<input type='radio' name='%s' value='%s' %s>%s</input><br>),
                     $self->name, $y, $args . $o, $z->{$y};
             };
             return $t;
+        }
+        when (/^select$/i) { 
+            my $items = "";
+            foreach(@{$self->values}) {
+                $items .= sprintf qq(<option value="%s">%s</option>), 
+                $_->{value}, $_->{name};
+            };
+            return sprintf qq(\n\t<select name='%s' %s>%s</select>), 
+            $self->name, $args, $items;
         }
         when (/^wysiwyg$/i) { return sprintf
             qq(\n\t<div name='%s' %s>%s</div>),

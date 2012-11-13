@@ -221,6 +221,22 @@ sub map_params {
     }
 }
 
+=head2 map_values 
+
+=cut
+
+sub map_values {
+    my ( $self, $item, $params ) = @_;
+    my $z;
+    
+    foreach my $currfield (@{$self->fields}) {
+        $z = $currfield->{name};
+        next if $z ne $item;
+        $currfield->{values} = [ @{$params} ];
+    }
+}
+
+
 =head2 map_params_by_names 
 
 Если имя поля и запись в БД совпадает, то можно пользоваться более простым
