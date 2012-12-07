@@ -42,6 +42,8 @@ has 'formname'  => ( is => 'rw', isa => 'Str', required => 1, );
 has 'action'    => ( is => 'rw', isa => 'Str', );
 has 'fields'    => ( is => 'ro', isa => 'ArrayRef', );
 
+has 'title'     => ( is => 'ro', isa => 'Str', );
+
 has 'buttons'   => ( is => 'ro', isa => 'ArrayRef', );
 
 =head3 build_id
@@ -135,7 +137,7 @@ sub render_closeform {
 
     my $parentdom   = $self->build_id . ' ' . $self->build_class;
     my $parentdiv   = ($parentdom =~ /^\s*$/) ? "" : "</div>";
-    return sprintf qq(<form>%s),
+    return sprintf qq(</form>%s),
         $parentdiv;
 }
 
@@ -180,6 +182,18 @@ sub render_form {
         $self->render_buttons,
         $self->render_closeform,
         $self->render_js;
+}
+
+=head2 render_title
+
+=cut
+
+sub render_title {
+    my ( $self ) = @_;
+    my $title = $self->title || "";
+
+    return sprintf qq(%s),
+        $title
 }
 
 
@@ -255,15 +269,15 @@ sub map_params_by_names {
     foreach my $param (@params) {
         if (ref($schema->$param) ne "") {
             try {
-            %keys->{$param} = $schema->$param->id;
+            $keys{$param} = $schema->$param->id;
             } catch {
-            %keys->{$param} = undef;
+            $keys{$param} = undef;
             };
         } else {
             try {
-            %keys->{$param} = $schema->$param;
+            $keys{$param} = $schema->$param;
             } catch {
-            %keys->{$param} = "";
+            $keys{$param} = "";
             };
         };
     };
