@@ -1,5 +1,6 @@
 package FAW::uRoles;
-use Moose;
+#use Moose;
+use Moo;
 use feature ':5.10';
 
 =head1

@@ -2,7 +2,8 @@ package FAW::Form;
 
 use feature ':5.10';
 
-use Moose;
+#use Moose;
+use Moo;
 use FAW::Element;
 
 use Try::Tiny;
@@ -38,13 +39,13 @@ id, classes = стилистические идентификаторы форм
  
 =cut
 
-has 'formname'  => ( is => 'rw', isa => 'Str', required => 1, );
-has 'action'    => ( is => 'rw', isa => 'Str', );
-has 'fields'    => ( is => 'ro', isa => 'ArrayRef', );
+has 'formname'  => ( is => 'rw', required => 1, );
+has 'action'    => ( is => 'rw', );
+has 'fields'    => ( is => 'ro', );
 
-has 'title'     => ( is => 'ro', isa => 'Str', );
+has 'title'     => ( is => 'ro', );
 
-has 'buttons'   => ( is => 'ro', isa => 'ArrayRef', );
+has 'buttons'   => ( is => 'ro', );
 
 =head3 build_id
 

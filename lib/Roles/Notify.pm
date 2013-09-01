@@ -1,6 +1,7 @@
 package FAW::Roles::Notify; 
 
-use Moose::Role;
+#use Moose::Role;
+use Moo::Role;
 
 =head1 FAW::Roles::Notify
 
@@ -15,10 +16,10 @@ use Moose::Role;
 
 =cut
 
-has 'label'     => ( is  => 'rw', isa => 'Str', );
-has 'note'      => ( is  => 'rw', isa => 'Str', );
-has 'error'     => ( is  => 'rw', isa => 'Str', );
-has 'tooltip'   => ( is  => 'rw', isa => 'Str', );
+has 'label'     => ( is  => 'rw', );
+has 'note'      => ( is  => 'rw', );
+has 'error'     => ( is  => 'rw', );
+has 'tooltip'   => ( is  => 'rw', );
 
 =head2 build_label
 

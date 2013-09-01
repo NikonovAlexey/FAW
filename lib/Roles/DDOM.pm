@@ -1,6 +1,7 @@
 package FAW::Roles::DDOM; 
 
-use Moose::Role;
+#se Moose::Role;
+use Moo::Role;
 
 =head1 FAW::Roles::DDOM
 
@@ -19,12 +20,12 @@ class. В этой ситуации разумнее всего вынести �
 
 has 'id'        => (
     is  => 'rw', 
-    isa => 'Str', 
+#    isa => 'Str', 
 );
 
 has 'classes'   => (
     is  => 'rw', 
-    isa => 'ArrayRef', 
+#    isa => 'ArrayRef', 
 );
 
 =head2 get_id

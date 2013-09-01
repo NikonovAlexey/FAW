@@ -1,5 +1,6 @@
 package FAW::Element; 
-use Moose;
+#use Moose;
+use Moo;
 use feature ':5.10';
 use Data::Dump qw(dump);
 
@@ -14,8 +15,8 @@ with 'FAW::Roles::DDOM', 'FAW::Roles::Notify';
 
 =cut
 
-has 'type'      => ( is  => 'rw', isa => 'Str', required => 1, );
-has 'name'      => ( is  => 'rw', isa => 'Str', required => 1, );
+has 'type'      => ( is  => 'rw', required => 1, );
+has 'name'      => ( is  => 'rw', required => 1, );
 
 =text
 
@@ -27,17 +28,17 @@ has 'name'      => ( is  => 'rw', isa => 'Str', required => 1, );
 
 =cut
 
-has 'value'     => ( is  => 'rw', isa => 'Str', );
-has 'default'   => ( is  => 'rw', isa => 'Str', );
-has 'mask'      => ( is  => 'rw', isa => 'Str', );
+has 'value'     => ( is  => 'rw', );
+has 'default'   => ( is  => 'rw', );
+has 'mask'      => ( is  => 'rw', );
 
 # хранилище значений для списков/перечней/радиокнопок
-has 'values'    => ( is  => 'rw', isa => 'Ref', );
+has 'values'    => ( is  => 'rw', );
 # опции, нужные для некоторых jQuery-элементов форм
-has 'jqoptions' => ( is  => 'rw', isa => 'Str', );
+has 'jqoptions' => ( is  => 'rw', );
 
 # Контейнет прикрепляемого jQuery-кода
-has 'jquery'    => ( is  => 'rw', isa => 'Str', );
+has 'jquery'    => ( is  => 'rw', );
 
 =head2 build_element
 
@@ -110,7 +111,7 @@ sub build_element {
             $self->name, $args, $items;
         }
         when (/^wysiwyg$/i) { return sprintf
-            qq(\n\t<div name='%s' %s>%s</div>),
+            qq(\n\t<textarea name='%s' %s>%s</textarea>),
             $self->name, $args, $value; 
         }
         when (/^upload$/i) { 
@@ -204,12 +205,7 @@ sub build_js_wysiwyg {
 
     return "" if ( $self->type !~ /^wysiwyg$/i);
     return sprintf qq|
-        \$("#%s").elrte({
-            cssClass: 'el-rte',
-            height: 400,
-            toolbar: 'complete',
-            cssfiles: ['css/elrte-inner.css'],
-        });
+        \$(document).ready(function () { \$("#%s").cleditor(); });
     |, $self->get_id;
 };
 
