@@ -204,8 +204,7 @@ sub build_js_wysiwyg {
     my ( $self ) = @_;
 
     return "" if ( $self->type !~ /^wysiwyg$/i);
-    return sprintf qq|
-        \$(document).ready(function () { \$("#%s").cleditor(); });
+    return sprintf qq|\$(document).ready(function () { \$("#%s").cleditor(); });
     |, $self->get_id;
 };
 
