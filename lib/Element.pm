@@ -103,9 +103,10 @@ sub build_element {
         }
         when (/^select$/i) { 
             my $items = "";
-            foreach(@{$self->values}) {
+            foreach(sort ( keys ($self->values) ) ) {
                 $items .= sprintf qq(<option value="%s">%s</option>), 
-                $_->{value}, $_->{name};
+                $_, $self->{values}->{$_};
+                #$_->{value}, $_->{name};
             };
             return sprintf qq(\n\t<select name='%s' %s>%s</select>), 
             $self->name, $args, $items;

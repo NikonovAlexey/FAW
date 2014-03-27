@@ -247,7 +247,7 @@ sub map_values {
     foreach my $currfield (@{$self->fields}) {
         $z = $currfield->{name};
         next if $z ne $item;
-        $currfield->{values} = [ @{$params} ];
+        $currfield->{values} = $params;
     }
 }
 
