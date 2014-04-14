@@ -4,7 +4,7 @@ use Moo;
 use feature ':5.10';
 use Data::Dump qw(dump);
 
-with 'FAW::Roles::DDOM', 'FAW::Roles::Notify';
+with 'FAW::Roles::DDOM', 'FAW::Roles::Notify', 'FAW::Roles::Container';
 
 =head1 FAW::Element
 
@@ -29,11 +29,20 @@ has 'name'      => ( is  => 'rw', required => 1, );
 =cut
 
 has 'value'     => ( is  => 'rw', );
+# хранилище значений для списков/перечней/радиокнопок
+has 'values'    => ( is  => 'rw', );
+
 has 'default'   => ( is  => 'rw', );
 has 'mask'      => ( is  => 'rw', );
 
-# хранилище значений для списков/перечней/радиокнопок
-has 'values'    => ( is  => 'rw', );
+=text
+
+Опции jqoptions и jquery стали запрещёнными и будут удалены в последующих
+релизах.
+
+=cut
+
+# !========= deprecated ===================!
 # опции, нужные для некоторых jQuery-элементов форм
 has 'jqoptions' => ( is  => 'rw', );
 
