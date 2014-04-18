@@ -58,14 +58,12 @@ sub compare_roles {
 
 sub translate_action {
     my ( $self, $action ) = @_;
-
-    given ($action) {
-        when (/^put$/i)    { return "c"; }
-        when (/^get$/i)    { return "r"; }
-        when (/^post$/i)   { return "u"; }
-        when (/^delete$/i) { return "d"; }
-    };
-
+    
+    $action =~ s/^put$/c/i;
+    $action =~ s/^get$/r/i;
+    $action =~ s/^post$/u/i;
+    $action =~ s/^delete$/d/i;
+    
     return '';
 }
 
@@ -117,17 +115,18 @@ sub check_role {
 
 sub decode_status {
     my ($self, $status) = @_;
-
-    given($status) {
-        while(0) { return "all ok"; }
-        while(1) { return "role not at list"; }
-        while(2) { return "inverted role"; }
-        while(3) { return "denied action"; }
-        while(4) { return "mistake rolename"; }
-        while(5) { return "untypic action"; }
+    
+    my $code = {
+        0 => "all ok",
+        1 => "role not at list",
+        2 => "inverted role",
+        3 => "denied action",
+        4 => "mistake rolename",
+        5 => "untypic action",
     };
     
-    return "unknown status";
+    $status = $code->{$status} || "unknown status";
+    return $status;
 }
 
 __PACKAGE__->meta->make_immutable;
