@@ -67,29 +67,28 @@ sub build_element {
         $self->build_class .' '.
         $self->build_tooltip; 
 
-    given ($self->type) {
-        when (/^text$/i) { return sprintf 
+    if ($self->type =~ /^text$/i) { return sprintf 
             qq(\n\t<input type='text' name='%s' value='%s' %s>),
             $self->name, $value, $args; 
         }
-        when (/^textarea$/i) { return sprintf 
+    if ($self->type =~ /^textarea$/i) { return sprintf 
             qq(\n\t<textarea name='%s' %s>%s</textarea>),
             $self->name, $args, $value;
         }
-        when (/^password$/i) { return sprintf
+    if ($self->type =~ /^password$/i) { return sprintf
             qq(\n\t<input type='password' name='%s' %s>),
             $self->name, $args; 
         }
-        when (/^date|datetime|time$/i) { return sprintf 
+    if ($self->type =~ /^date|datetime|time$/i) { return sprintf 
             qq(\n\t<input type='text' name='%s' value='%s' %s>),
             $self->name, $value, $args; 
         }
-        when (/^check$/i) { return sprintf
+    if ($self->type =~ /^check$/i) { return sprintf
             qq(\n\t<input type='checkbox' name='%s' value='%s' %s>),
             $self->name, $value, $args; 
         }
-        when (/^switcher$/i) {
-            my ($t, $x, $y, $z, $o);
+    if ($self->type =~ /^switcher$/i) {
+            my ($t, $x, $y, $o, $z);
             # переключатели перечислены в массиве хэшей. Каждый переключатель
             # может иметь дополнительный ключ "default", который делает его
             # выбранным по умолчанию.
@@ -110,7 +109,7 @@ sub build_element {
             };
             return $t;
         }
-        when (/^select$/i) { 
+    if ($self->type =~ /^select$/i) { 
             my $items = "";
             foreach(sort ( keys ($self->values) ) ) {
                 $items .= sprintf qq(<option value="%s">%s</option>), 
@@ -120,11 +119,11 @@ sub build_element {
             return sprintf qq(\n\t<select name='%s' %s>%s</select>), 
             $self->name, $args, $items;
         }
-        when (/^wysiwyg$/i) { return sprintf
+    if ($self->type =~ /^wysiwyg$/i) { return sprintf
             qq(\n\t<textarea name='%s' %s>%s</textarea>),
             $self->name, $args, $value; 
         }
-        when (/^upload$/i) { 
+    if ($self->type =~ /^upload$/i) { 
             if ($value ne "") { return sprintf 
                 qq(\n\t<span %s>%s</span>),
                 $args, $value;
@@ -133,10 +132,9 @@ sub build_element {
                 $self->name, $args;
             }
         }
-        when (/^button$/i) { return sprintf
+    if ($self->type =~ /^button$/i) { return sprintf
             qq(\n\t<input type="submit" name="%s" value="%s" %s>),
             $self->name, $self->value, $args;
-        }
     };
 }
 
@@ -192,20 +190,18 @@ sub build_js_dated {
     my $type    = $self->type || "";
     my $options = $self->jqoptions || "";
     
-    given ($self->type) {
-        when ( /^time$/i ) {
+    if ($self->type =~ /^time$/i ) {
             return sprintf qq(\$\("#%s"\).timepicker\({%s}\);),
                 $self->get_id, $options;
         }
-        when ( /^datetime$/i ) {
+    if ($self->type =~ /^datetime$/i ) {
             return sprintf qq(\$\("#%s"\).datetimepicker\({%s}\);),
                 $self->get_id, $options;
         }
-        when ( /^date$/i ) {
+    if ($self->type =~ /^date$/i ) {
             return sprintf qq(\$\("#%s"\).datepicker\({%s}\);), 
                 $self->get_id, $options;
         }
-    };
     
     return "";
 }
