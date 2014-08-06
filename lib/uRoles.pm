@@ -26,6 +26,10 @@ sub complete_role {
 
 =head2 split_role
 
+Каждая роль может быть указана в сокращённом формате (без прав доступа). Тогда
+эту роль следует дополнить полными правами (создание-чтение-обновление-
+удаление) и разобрать на роль и на права.
+
 =cut
 
 sub split_role {
@@ -64,7 +68,7 @@ sub translate_action {
     $action =~ s/^post$/u/i;
     $action =~ s/^delete$/d/i;
     
-    return '';
+    return $action;
 }
 
 =head2 check_role
@@ -77,8 +81,9 @@ sub translate_action {
     2 = роль инверсная, т.е. действие разрешается, если данная роль не
         назначена пользователю;
     3 = запрошенное действие запрещается для этой роли;
-    4 = роль не может быть "any";
+    4 = нетипичная роль (роль пользователя не может быть "any");
     5 = нетипичное действие;
+    6 = некорректное перечисление ролей;
 
 =cut
 
@@ -86,23 +91,29 @@ sub check_role {
     my ( $self, $user_role, $user_action, $roles_list) = @_;
     my ( $def_inverce, $def_role, $def_action );
     my $deny_flag = 1;
-
-    ($def_inverce, $user_role, $def_action) = @{$self->split_role($user_role)};
-    return 4 if ($user_role eq "any");
-
-    $user_action = $self->translate_action($user_action);
-    return 5 if ($user_action eq "");
-
-    foreach my $current_role (split(/,/, $roles_list)) {
-        ( $def_inverce, $def_role, $def_action ) = @{$self->split_role($current_role)};
-        #say "$current_role : $def_inverce, $def_role, $def_action";
-        if ( ( $def_role eq $user_role ) || ( $def_role eq "any" ) ) {
-            if ( $def_inverce eq "!" ) { return 2; }
-            if ( $def_action =~ /$user_action/i ) { $deny_flag = 0; } 
-                else { $deny_flag = 3 };
-            #say "$def_action -in- $user_action";
+    
+    # роли действия указаны некорректно
+    return 6 if ( $roles_list =~ /,/ );
+    
+    # роль пользователя не может быть ролью "для всех"
+    foreach my $urole ( split(/\s/, $user_role) ) {
+        ($def_inverce, $urole, $def_action) = @{$self->split_role($urole)};
+        return 4 if ( $urole =~ /any|all/i ) ;
+        
+        # действие, запрошенное пользователем является нетипичным
+        $user_action = $self->translate_action($user_action);
+        return 5 if ($user_action !~ /^[c|r|u|d]{1,4}$/);
+        
+        foreach my $current_role (split(/\s/, $roles_list)) {
+            ( $def_inverce, $def_role, $def_action ) = @{$self->split_role($current_role)};
+            #say "$current_role : $def_inverce, $def_role, $def_action";
+            if ( ( $def_role eq $urole ) || ( $def_role =~ /any|all/i ) ) {
+                if ( $def_inverce eq "!" ) { return 2; }
+                if ( $def_action =~ /$user_action/i ) { $deny_flag = 0; } 
+                    else { $deny_flag = 3 };
+            }
         }
-    }
+    };
     return $deny_flag;
 }
 
