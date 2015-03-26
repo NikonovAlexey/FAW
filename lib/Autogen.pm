@@ -3,7 +3,7 @@ package FAW::Autogen;
 use strict;
 use warnings;
 
-use feature ':5.10';
+use feature ':5.14';
 use Moo;
 
 use Try::Tiny;
@@ -30,41 +30,24 @@ has 'engine' => ( is => 'ro', );
 
 sub build_hash {
     my $self = shift;
+    my $cfg = shift;
     my $key = shift;
     my $val;
     
-    if ( @_ > 0 ) { 
-        $val = $self->build_hash(@_);
-    } else { 
-        $val = {};
+    if ( @_ > 1 ) { 
+        $self->build_hash(${$cfg}{$key}, @_);
+    } else {
+        $val = shift;
+        ${$cfg}{$key} = $val;
     }
     return { $key => $val };
 }
 
-=head2 glue_value
-
-Вклеить значение в хэш
-
-=cut
-
-sub glue_value {
-    my $self = shift;
-    my $config = shift;
-    my $val = pop;
-    my $key = pop;
-    
-    if ( @_ > 0 ) {
-        my $point = $self->get_hash_link($config, @_);
-        ${$point}{$key} = $val;
-    } else {
-        ${$config}{$key} = $val;
-    };
-};
-
 =head2 get_hash_link
 
-# получим ссылку на точку в хэше
-# последнее значение на входе обязательно должно быть ссылкой на хэш
+получим ссылку на точку в хэше
+
+Первое значение на входе обязательно должно быть ссылкой на хэш
 
 =cut
 
@@ -77,27 +60,35 @@ sub get_hash_link {
     # если ключ существует
     if ( exists ${$hash}{$key} ) {
         # если значение - хэш и заданы вложенные значения
+        # (когда есть ещё один уровень вглубь)
         if ( ( ref(${$hash}{$key}) =~ /hash/i ) && ( @_ > 0 ) ) {
             return $self->get_hash_link(${$hash}{$key}, @_); 
         }
         # если значение - хэш, но вложенные значения не заданы 
+        # (когда мы достигли точки указания)
         elsif ( ( ref(${$hash}{$key}) =~ /hash/i ) && ( @_ = 0 ) ) {
-            return ${$hash}{$key}
+            return ${$hash}{$key};
         }
         # если значение - не хэш, и заданы вложенные значения 
+        # (когда мы адресуем более глубокую точку, которой нет в хэше)
         elsif ( ( ref(${$hash}{$key}) !~ /hash/i ) && ( @_ > 0 ) ) {
-            #if ( @_ > 1 ) { } else { };
-            say " can i build new hash? ";
-            $hash->{$key} = $self->build_hash(@_);
+            ${$hash}{$key} = $self->build_hash(@_);
+            return ${$hash}{$key};
         }
         # или значение - не хэш, и вложенные значения не заданы
+        # (когда достигли точки указания)
         else {
-            return ${$hash}{$key}
+            return ${$hash}{$key};
         }
     # если ключа не существует
     } else {
-        ${$hash}{$key} = {};
-        return ${$hash}{$key};
+        # и заданы вложенные значения
+        if ( @_ > 0 ) {
+            ${$hash}{$key} = {};
+            return $self->get_hash_link(${$hash}{$key}, @_); 
+        } else {
+            return ${$hash}{$key};
+        };
     };
 };
 
@@ -139,7 +130,6 @@ sub config_write {
 =head2 cfg
 
 
-
 =cut
 
 sub cfg {
@@ -176,19 +166,30 @@ sub cfg_set {
     $point->{$field} = $value;
 }
 
-# Установить информацию, только если она ранее не была указана
+=head2 cfg_set_if_no_exist
+
+Установить информацию, только если она ранее не была указана. Передать точку
+назначения в виде последовательного перечисления ветвей дерева, причём последними
+элементами в списке подразумеваются конечный ключ и значение.
+
+=cut
+
 sub cfg_set_if_no_exist {
     my $self    = shift;
-    my $val     = pop;
-    my $field   = pop;
+    my $cfg     = $self->{config};
+    my ( $point, $field, $val );
     
-    my $point   = $self->cfg_get(@_);
-
-    if ( ! defined( ${$point}{$field} ) ||
-        ref(${$point}{$field}) =~ /^hash$/i ) {
+    # Возьмём последние элементы. Это будет пара ключ:значение
+    $val        = pop; 
+    $field      = pop; 
     
-        ${$point}{$field} = $val;
-    }
+    $point = $self->get_hash_link($cfg, @_);
+    
+    if ( defined(${$point}{$field}) ) {
+        return ${$point}{$field};
+    } else {
+        $self->build_hash($cfg, @_, $field, $val);
+    };
 }
 
 
