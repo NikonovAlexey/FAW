@@ -112,9 +112,13 @@ sub build_element {
     if ($self->type =~ /^select$/i) { 
             my $items = "";
             foreach(sort ( keys ($self->values) ) ) {
-                $items .= sprintf qq(<option value="%s">%s</option>), 
-                $_, $self->{values}->{$_};
-                #$_->{value}, $_->{name};
+                if ( $value eq $_ ) {
+                    $items .= sprintf qq(<option value="%s" selected>%s</option>), 
+                    $_, $self->{values}->{$_};
+                } else {
+                    $items .= sprintf qq(<option value="%s">%s</option>), 
+                    $_, $self->{values}->{$_};
+                }
             };
             return sprintf qq(\n\t<select name='%s' %s>%s</select>), 
             $self->name, $args, $items;

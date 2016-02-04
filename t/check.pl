@@ -18,6 +18,9 @@
 #     REVISION: ---
 #===============================================================================
 
+use FindBin qw($Bin);
+use lib "$Bin/../lib/";
+
 use FAW::Form;
 #use FAW::Element;
 use feature ':5.10';

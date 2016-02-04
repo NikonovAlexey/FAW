@@ -2,7 +2,6 @@ package FAW::Form;
 
 use feature ':5.10';
 
-#use Moose;
 use Moo;
 use FAW::Element;
 
